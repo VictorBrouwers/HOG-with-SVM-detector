@@ -11,7 +11,7 @@ from skimage.feature import hog
 from skimage import data, color, exposure
 from PIL import Image
 #%%
-img = io.imread(r"C:\Users\s169261\Documents\`BEP\Alessandro\QDs\Test\138dsk.png")
+img = io.imread(r"C:\path\to\file\name.extension")
 #im= Image.open(r"Insert\Image\Path\Here.jpg")
 image = color.rgb2gray(img)
 

@@ -1,22 +1,16 @@
 from skimage.feature import hog
 from skimage.transform import pyramid_gaussian
-import sklearn.externals
 import joblib
 from skimage import color
 from imutils.object_detection import non_max_suppression
-import imutils
 import numpy as np
 import cv2
-import os
-import glob
-from Train_HOG_SVM import nx, ny #defines size of training data and sliding window
+from Train_HOG_SVM import nx, ny, pixels_per_cell, cells_per_block, orientations #defines size of training data and sliding window
 
-#Define HOG Parameters
-# change them if necessary to orientations = 8, pixels per cell = (16,16), cells per block to (1,1) for weaker HOG
-orientations = 9
-pixels_per_cell = (5, 5)
-cells_per_block = (2, 2)
-threshold = .3
+#define the step size of the sliding window, the confidence score for detection and the overlap threshold
+step_size = 2
+conf_score = .5
+overlap_threshold = .8
 
 # define the sliding window:
 def sliding_window(image, stepSize, windowSize):# image is the input, step size is the no.of pixels needed to skip and windowSize is the size of the actual window
@@ -27,13 +21,13 @@ def sliding_window(image, stepSize, windowSize):# image is the input, step size 
             yield (x, y, image[y: y + windowSize[1], x:x + windowSize[0]])
 #%%
 # Upload the saved svm model:
-model = joblib.load('InAsBi_model.npy')
+model = joblib.load('name_model.npy')
 
 # Test the trained classifier on an image below
 scale = 0
 detections = []
 # read the image you want to detect the object in:
-img= cv2.imread(r"C:\Users\s169261\Documents\`BEP\Alessandro\Atoms\Test\GaAsBi_test.JPG")
+img= cv2.imread(r"C:\path\to\file\name.extension")
 
 # Try it with image resized if the image is too big
 #img= cv2.resize(img,(300,200)) # can change the size to default by commenting this code out our put in a random number
@@ -45,7 +39,7 @@ downscale=1.5
 # Apply sliding window:
 for resized in pyramid_gaussian(img, downscale=1.5): # loop over each layer of the image that you take
     # loop over the sliding window for each layer of the pyramid
-    for (x,y,window) in sliding_window(resized, stepSize=10, windowSize=(winW,winH)):
+    for (x,y,window) in sliding_window(resized, stepSize=step_size, windowSize=(winW,winH)):
         # if the window does not meet our desired window size, ignore it
         if window.shape[0] != winH or window.shape[1] !=winW or window.shape[2] != 3: # ensure the sliding window has met the minimum size requirement
             continue
@@ -55,7 +49,7 @@ for resized in pyramid_gaussian(img, downscale=1.5): # loop over each layer of t
         pred = model.predict(fds) # use the SVM model to make a prediction on the HOG features extracted from the window
         
         if pred == 1:
-            if model.decision_function(fds) > 1:  # set a threshold value for the SVM prediction i.e. only firm the predictions above probability of 0.6
+            if model.decision_function(fds) > conf_score:  # set a threshold value for the SVM prediction i.e. only firm the predictions above probability of 0.6
                 print("Detection:: Location -> ({}, {})".format(x, y))
                 print("Scale ->  {} | Confidence Score {} \n".format(scale,model.decision_function(fds)))
                 detections.append((int(x * (downscale**scale)), int(y * (downscale**scale)), model.decision_function(fds),
@@ -71,7 +65,7 @@ rects = np.array([[x, y, x + w, y + h] for (x, y, _, w, h) in detections]) # do 
 sc = [score[0] for (x, y, score, w, h) in detections]
 print("detection confidence score: ", len(sc), sc)
 sc = np.array(sc)
-pick = non_max_suppression(rects, probs = sc, overlapThresh = 0.3)
+pick = non_max_suppression(rects, probs = sc, overlapThresh = overlap_threshold)
 print('number of green boxes: ', pick.shape[0])
 
 # the piece of code above creates a raw bounding box prior to using NMS

@@ -1,23 +1,11 @@
 # Importing the necessary modules:
 
 from skimage.feature import hog
-from skimage.transform import pyramid_gaussian
-from skimage.io import imread
-import sklearn.externals
 import joblib
-import itertools
 from sklearn.preprocessing import LabelEncoder
 from sklearn.svm import LinearSVC
 from sklearn.metrics import classification_report
 from sklearn.model_selection import train_test_split
-from skimage import color
-from imutils.object_detection import non_max_suppression
-import imutils
-import numpy as np
-import argparse
-import cv2
-import os
-import glob
 from PIL import Image # This will be used to read/modify images (can be done via OpenCV too)
 from numpy import *
 
@@ -25,7 +13,7 @@ from numpy import *
 orientations = 9
 pixels_per_cell = (5, 5)
 cells_per_block = (2, 2)
-threshold = .3
+
 
 # define size of sliding window and training data. Choose similar dimensions to typical training data dimensions
 nx, ny = 20, 20
@@ -33,9 +21,9 @@ nx, ny = 20, 20
 
 # define path to images:
 # this is the path of your positive input dataset
-pos_im_path = r"C:\Users\s169261\Documents\`BEP\Alessandro\Atoms\Training InAsBi centercropped"
+pos_im_path = r"C:\path\to\file\folder"
 # define the same for negatives
-neg_im_path = r"C:\Users\s169261\Documents\`BEP\Alessandro\Atoms\Negatives\InAsBi"
+neg_im_path = r"C:\path\to\file\folder"
 
 # read the image files:
 pos_im_listing = os.listdir(pos_im_path) # it will read all the files in the positive image path (so all the required images)
@@ -91,4 +79,4 @@ print(classification_report(testLabels, predictions))
 
 # Save the model:
 #%% Save the Model
-joblib.dump(model, 'InAsBi_model.npy')
+joblib.dump(model, 'name_model.npy')
