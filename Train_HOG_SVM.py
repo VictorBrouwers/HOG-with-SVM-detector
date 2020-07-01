@@ -1,5 +1,7 @@
 # Importing the necessary modules:
 
+import os
+import numpy as np
 from skimage.feature import hog
 import joblib
 from sklearn.preprocessing import LabelEncoder
